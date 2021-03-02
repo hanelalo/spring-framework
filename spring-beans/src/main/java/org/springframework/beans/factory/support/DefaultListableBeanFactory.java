@@ -160,7 +160,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Map from dependency type to corresponding autowired value. */
 	private final Map<Class<?>, Object> resolvableDependencies = new ConcurrentHashMap<>(16);
 
-	/** Map of bean definition objects, keyed by bean name. */
+	/** Map of bean definition objects, keyed by bean name.
+	 * 缓存 bean 名称和对应的 BeanDefinition 的映射，在解析配置文件阶段会放入数据*/
 	private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(256);
 
 	/** Map from bean name to merged BeanDefinitionHolder. */
@@ -172,10 +173,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Map of singleton-only bean names, keyed by dependency type. */
 	private final Map<Class<?>, String[]> singletonBeanNamesByType = new ConcurrentHashMap<>(64);
 
-	/** List of bean definition names, in registration order. */
+	/** List of bean definition names, in registration order.
+	 * Bean定义名称的列表，按注册顺序存储。 */
 	private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
 
-	/** List of names of manually registered singletons, in registration order. */
+	/** List of names of manually registered singletons, in registration order.
+	 * 手动注册的单例的名称列表，按注册顺序存储。 */
 	private volatile Set<String> manualSingletonNames = new LinkedHashSet<>(16);
 
 	/** Cached array of bean definition names in case of frozen configuration. */
@@ -941,6 +944,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+					// 通过 beanName 获取 bean 实例
 					getBean(beanName);
 				}
 			}
@@ -990,10 +994,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
+		// 如果已经有相同 beanName 的 BeanDefinition 存在，且不支持 BeanDefinition 覆盖，就抛异常
 		if (existingDefinition != null) {
 			if (!isAllowBeanDefinitionOverriding()) {
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
+			// 这一行有点没看懂这个 role  TODO @hanelalo
 			else if (existingDefinition.getRole() < beanDefinition.getRole()) {
 				// e.g. was ROLE_APPLICATION, now overriding with ROLE_SUPPORT or ROLE_INFRASTRUCTURE
 				if (logger.isInfoEnabled()) {
@@ -1016,10 +1022,14 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			// 将 beanName 和 BeanDefinition 映射关系进行注册
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
+			// 这段逻辑是当 beanDefinitionMap 中不存在相同 beanName 的 BeanDefinition 时，一般情况下都是走这段逻辑
+			// 检查该工厂的 Bean 创建阶段是否已经开始，即在此期间是否已将任何Bean标记为已创建。
 			if (hasBeanCreationStarted()) {
+				// 目前还不知道这是个什么场景 TODO @hanelalo
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
 				synchronized (this.beanDefinitionMap) {
 					this.beanDefinitionMap.put(beanName, beanDefinition);
@@ -1032,8 +1042,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			else {
 				// Still in startup registration phase
+				// 注册 BeanDefinition
 				this.beanDefinitionMap.put(beanName, beanDefinition);
+				// 将新的 bean 名称添加到 beanDefinitionNames
 				this.beanDefinitionNames.add(beanName);
+				// 从手动注册的单例 bean 名称列表中移除
 				removeManualSingletonName(beanName);
 			}
 			this.frozenBeanDefinitionNames = null;
@@ -1126,7 +1139,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	 */
 	@Override
 	protected void checkForAliasCircle(String name, String alias) {
+		// 检查给定名称是否已经作为另一个方向的别名指向给定别名，
+		// 是否预先捕获了循环引用并引发了相应的IllegalStateException。
 		super.checkForAliasCircle(name, alias);
+		// 如果这个别名在beanDefinitionMap 中u而已经有了，那就发生了命名冲突
 		if (!isAllowBeanDefinitionOverriding() && containsBeanDefinition(alias)) {
 			throw new IllegalStateException("Cannot register alias '" + alias +
 					"' for name '" + name + "': Alias would override bean definition '" + alias + "'");

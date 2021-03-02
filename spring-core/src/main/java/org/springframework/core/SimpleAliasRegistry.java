@@ -61,12 +61,15 @@ public class SimpleAliasRegistry implements AliasRegistry {
 				}
 			}
 			else {
+				// 从别名映射中查找当前别名是否已经存在
 				String registeredName = this.aliasMap.get(alias);
 				if (registeredName != null) {
+					// 如果 别名对应的 beanName 和传入的一致，表示这个映射关系其实已经注册
 					if (registeredName.equals(name)) {
 						// An existing alias - no need to re-register
 						return;
 					}
+					// bean 命名冲突，抛异常
 					if (!allowAliasOverriding()) {
 						throw new IllegalStateException("Cannot define alias '" + alias + "' for name '" +
 								name + "': It is already registered for name '" + registeredName + "'.");
@@ -76,6 +79,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 								registeredName + "' with new target name '" + name + "'");
 					}
 				}
+				// 检查给定名称是否已经作为另一个方向的别名指向给定别名，是否预先捕获了循环引用并引发了相应的IllegalStateException。
 				checkForAliasCircle(name, alias);
 				this.aliasMap.put(alias, name);
 				if (logger.isTraceEnabled()) {
@@ -188,6 +192,9 @@ public class SimpleAliasRegistry implements AliasRegistry {
 	 * Check whether the given name points back to the given alias as an alias
 	 * in the other direction already, catching a circular reference upfront
 	 * and throwing a corresponding IllegalStateException.
+	 *
+	 * 检查给定名称是否已经作为另一个方向的别名指向给定别名，是否预先捕获了循环引用并引发了相应的IllegalStateException。
+	 *
 	 * @param name the candidate name
 	 * @param alias the candidate alias
 	 * @see #registerAlias
