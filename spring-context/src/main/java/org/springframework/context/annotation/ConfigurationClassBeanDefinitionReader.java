@@ -150,6 +150,7 @@ class ConfigurationClassBeanDefinitionReader {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
+			// beanMethod 是 @Bean 修饰的方法对象，这里通过 beanMethod 加载 BeanDefinition
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
@@ -185,7 +186,7 @@ class ConfigurationClassBeanDefinitionReader {
 	 */
 	@SuppressWarnings("deprecation")  // for RequiredAnnotationBeanPostProcessor.SKIP_REQUIRED_CHECK_ATTRIBUTE
 	private void loadBeanDefinitionsForBeanMethod(BeanMethod beanMethod) {
-		ConfigurationClass configClass = beanMethod.getConfigurationClass();
+ 		ConfigurationClass configClass = beanMethod.getConfigurationClass();
 		MethodMetadata metadata = beanMethod.getMetadata();
 		String methodName = metadata.getMethodName();
 
@@ -211,7 +212,9 @@ class ConfigurationClassBeanDefinitionReader {
 		}
 
 		// Has this effectively been overridden before (e.g. via XML)?
+		// 如果是重写的已存在的 BeanDefinition 的方法，那就不加载，直接 return
 		if (isOverriddenByExistingDefinition(beanMethod, beanName)) {
+			// 如果是重写的已存在的 BeanDefinition 的方法, 并且生成的 beanName 还和已存在的 BeanDefinitin 相同，抛异常
 			if (beanName.equals(beanMethod.getConfigurationClass().getBeanName())) {
 				throw new BeanDefinitionStoreException(beanMethod.getConfigurationClass().getResource().getDescription(),
 						beanName, "Bean name derived from @Bean method '" + beanMethod.getMetadata().getMethodName() +
@@ -269,6 +272,7 @@ class ConfigurationClassBeanDefinitionReader {
 
 		// Consider scoping
 		ScopedProxyMode proxyMode = ScopedProxyMode.NO;
+		// 设置 BeanDefinition 的 Scope，其实就是 bean 的作用域，比如是 request 或者 session
 		AnnotationAttributes attributes = AnnotationConfigUtils.attributesFor(metadata, Scope.class);
 		if (attributes != null) {
 			beanDef.setScope(attributes.getString("value"));
@@ -292,6 +296,7 @@ class ConfigurationClassBeanDefinitionReader {
 			logger.trace(String.format("Registering bean definition for @Bean method %s.%s()",
 					configClass.getMetadata().getClassName(), beanName));
 		}
+		// 注册 beanDefinition 到 beanDefinitionMap
 		this.registry.registerBeanDefinition(beanName, beanDefToRegister);
 	}
 

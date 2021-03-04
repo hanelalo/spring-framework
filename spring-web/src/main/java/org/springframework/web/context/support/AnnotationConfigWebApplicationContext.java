@@ -217,6 +217,7 @@ public class AnnotationConfigWebApplicationContext extends AbstractRefreshableWe
 				logger.debug("Registering component classes: [" +
 						StringUtils.collectionToCommaDelimitedString(this.componentClasses) + "]");
 			}
+			// 注册　BeanDefiniton
 			reader.register(ClassUtils.toClassArray(this.componentClasses));
 		}
 

@@ -1029,7 +1029,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			// 这段逻辑是当 beanDefinitionMap 中不存在相同 beanName 的 BeanDefinition 时，一般情况下都是走这段逻辑
 			// 检查该工厂的 Bean 创建阶段是否已经开始，即在此期间是否已将任何Bean标记为已创建。
 			if (hasBeanCreationStarted()) {
-				// 目前还不知道这是个什么场景 TODO @hanelalo
+				// 工厂中正在创建 bean
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
 				synchronized (this.beanDefinitionMap) {
 					this.beanDefinitionMap.put(beanName, beanDefinition);

@@ -331,8 +331,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				// Create bean instance.
 				if (mbd.isSingleton()) {
+					// 根据 beanName 获取单例 bean, 并传入一个 BeanFactory 函数时接口的回调
+					// 当 bean 不存在时，需要调用这个回调函数来创建 bean
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							// 当 bean 不存在时，最终会调用到这里的 creatBean 方法来创建单例 bean
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
