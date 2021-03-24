@@ -489,7 +489,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 
 	//---------------------------------------------------------------------
-	// Implementation of ConfigurableApplicationContext interface
+	// ImplementatAion of ConfigurableApplicationContext interface
 	//---------------------------------------------------------------------
 
 	/**
@@ -550,7 +550,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			// 获取一个 BeanFactory，其实是告诉子类创建 BeadFactory
+			// 获取一个 BeanFactory，其实是告诉具体的实现类创建 BeadFactory
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
@@ -559,8 +559,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
-				// 在标准初始化之后，修改应用程序上下文的内部Bean工厂。所有 BeanDefinition 都将被加载，
-				// 但尚未实例化任何bean。这允许在某些ApplicationContext实现中注册特殊的BeanPostProcessor等。
+				// 在标准初始化之后，修改应用程序上下文的内部 Bean 工厂。所有 BeanDefinition 都将被加载，
+				// 但尚未实例化任何bean。这允许在某些 ApplicationContext 实现中注册特殊的 BeanPostProcessor 等。
 				postProcessBeanFactory(beanFactory);
 
 				StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
